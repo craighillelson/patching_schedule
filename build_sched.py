@@ -1,12 +1,11 @@
 """Build a patching schedule for computers across clients."""
 
-from datetime import (date,
-                      timedelta)
-import pyinputplus as pyip
-import csv
-from collections import defaultdict
-from collections import namedtuple
+from datetime import date
 from itertools import cycle
+from collections import (namedtuple,
+                         defaultdict)
+import csv
+import pyinputplus as pyip
 from dateutil.relativedelta import relativedelta
 from dateutil.rrule import SA
 
@@ -16,12 +15,12 @@ def prompt_user_for_target_date():
 
     today = date.today()
     target = pyip.inputDate("\nPlease enter the target date for "
-                                 "completion (YYYY-MM-DD).\n> ",
-                                 formats=["%Y-%m-%d"])
+                            "completion (YYYY-MM-DD).\n> ",
+                            formats=["%Y-%m-%d"])
     while True:
         if today > target:
             target = pyip.inputDate("\nPlease enter a date in the future."
-                                         "\n> ", formats=["%Y-%m-%d"])
+                                    "\n> ", formats=["%Y-%m-%d"])
         else:
             break
     return today, target
@@ -129,9 +128,9 @@ def make_a_list_of_dictionaries():
 def build_sched():
     lst = []
 
-    for dct in client_comps:
+    for dct in client_comps_list:
         for client, comp_details in dct.items():
-            num_computers = len(comp_details[0])
+            # num_computers = len(comp_details[0])
             for comp, sat in zip(comp_details[0], cycle(saturdays)):
                 lst.append((str(sat), client, comp))
 
@@ -181,7 +180,7 @@ def write_dct_to_csv():
                 keys_values = (sat, client, comp)
                 out_csv.writerow(keys_values)
 
-    print(f'"patching_schedule.csv" exported successfully\n')
+    print('"patching_schedule.csv" exported successfully\n')
 
 
 todays_date, target_date = prompt_user_for_target_date()
@@ -194,7 +193,7 @@ builds_to_exclude = prompt_user_for_builds_to_exclude()
 clients_comps = exclude_builds_specified_user()
 clients = build_a_set_of_clients()
 dct_from_tuple = make_dct()
-client_comps = make_a_list_of_dictionaries()
+client_comps_list = make_a_list_of_dictionaries()
 sched = build_sched()
 ordererd_sched = make_ordered_sched()
 schedule = tuples_to_dictionary()
