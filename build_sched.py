@@ -47,8 +47,8 @@ def make_list_of_saturdays():
 def prompt_user_for_builds_to_exclude():
     lst = []
     while True:
-        version = input("\nWhich version or versions would you like to exclude?"
-                        "\n> ")
+        version = input("\nWhich version or versions would you like to "
+                        "exclude? Enter nothing to exit.\n> ")
         if version == "":
             break
         lst = lst + [version]
