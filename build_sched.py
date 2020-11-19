@@ -52,7 +52,7 @@ def prompt_user_for_builds_to_exclude():
         if version == "":
             break
         lst = lst + [version]
-        return lst
+    return lst
 
 
 def open_csv_pop_dct_namedtuple():
