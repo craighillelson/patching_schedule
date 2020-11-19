@@ -130,7 +130,6 @@ def build_sched():
 
     for dct in client_comps_list:
         for client, comp_details in dct.items():
-            # num_computers = len(comp_details[0])
             for comp, sat in zip(comp_details[0], cycle(saturdays)):
                 lst.append((str(sat), client, comp))
 
@@ -171,14 +170,16 @@ def write_dct_to_csv():
 
     with open("patching_schedule.csv", "w") as out_file:
         out_csv = csv.writer(out_file)
-        out_csv.writerow(["saturday","client","computer name"])
+        out_csv.writerow(["patching schedule"])
         for sat, client_comps in schedule.items():
-            keys_values = (sat, client_comps)
+            out_csv.writerow([sat])
+            keys_values = (client_comps)
             for details in client_comps:
                 client = details[0]
                 comp = details[1]
-                keys_values = (sat, client, comp)
+                keys_values = (client, comp)
                 out_csv.writerow(keys_values)
+            out_csv.writerow("")
 
     print('"patching_schedule.csv" exported successfully\n')
 
