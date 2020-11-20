@@ -170,17 +170,15 @@ def write_dct_to_csv():
 
     with open("patching_schedule.csv", "w") as out_file:
         out_csv = csv.writer(out_file)
-        out_csv.writerow(["patching schedule"])
+        out_csv.writerow(["date","client","computer"])
         for sat, client_comps in schedule.items():
-            out_csv.writerow([sat])
             keys_values = (client_comps)
             for details in client_comps:
                 client = details[0]
                 comp = details[1]
-                keys_values = (client, comp)
+                keys_values = (sat, client, comp)
                 out_csv.writerow(keys_values)
-            out_csv.writerow("")
-
+                
     print('"patching_schedule.csv" exported successfully\n')
 
 
