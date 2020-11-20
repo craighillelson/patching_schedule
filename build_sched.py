@@ -69,7 +69,7 @@ def open_csv_pop_dct_namedtuple():
         assembled_tuple = namedtuple('assembled_tuple', headings)
         for detail in f_csv:
             row = assembled_tuple(*detail)
-            lst.append((row.client, row.workstation, row.build))
+            lst.append((row.client, row.computer_name, row.build))
 
     return lst
 
