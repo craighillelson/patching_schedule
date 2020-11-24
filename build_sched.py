@@ -1,10 +1,10 @@
 """Build a patching schedule for computers across clients."""
 
-from datetime import date
-from itertools import cycle
 from collections import (namedtuple,
                          defaultdict)
+from itertools import cycle
 import csv
+from datetime import date
 import pyinputplus as pyip
 from dateutil.relativedelta import relativedelta
 from dateutil.rrule import SA
@@ -26,6 +26,37 @@ def prompt_user_for_target_date():
     return today, target
 
 
+def prompt_user_for_builds_to_exclude():
+    lst = []
+    while True:
+        version = input("\nWhich version or versions would you like to "
+                        "exclude? Enter nothing to exit.\n> ")
+        if version == "":
+            break
+        lst = lst + [version]
+    return lst
+
+
+def open_csv(lst2):
+
+    lst1 = []
+    lst3 = []
+
+    with open("computers.csv") as csv_file:
+        f_csv = csv.reader(csv_file)
+        headings = next(f_csv)
+        assembled_tuple = namedtuple('assembled_tuple', headings)
+        for detail in f_csv:
+            row = assembled_tuple(*detail)
+            lst1.append(row.client)
+            dct = defaultdict(list)
+            if row.build not in lst2:
+                dct[row.client].append((row.computer_name, row.build))
+                lst3.append(dct)
+
+    return set(lst1), lst3
+
+
 def find_saturday_following_date_specified(sat):
     return sat + relativedelta(weekday=SA(+1))
 
@@ -44,142 +75,25 @@ def make_list_of_saturdays():
     return lst
 
 
-def prompt_user_for_builds_to_exclude():
-    lst = []
-    while True:
-        version = input("\nWhich version or versions would you like to "
-                        "exclude? Enter nothing to exit.\n> ")
-        if version == "":
-            break
-        lst = lst + [version]
-    return lst
-
-
-def open_csv_pop_dct_namedtuple():
-    """
-    Open a csv and populate, create a tuple from each row, and populate a
-    list with the tuples created.
-    """
-
-    lst = []
-
-    with open("computers.csv") as csv_file:
-        f_csv = csv.reader(csv_file)
-        headings = next(f_csv)
-        assembled_tuple = namedtuple('assembled_tuple', headings)
-        for detail in f_csv:
-            row = assembled_tuple(*detail)
-            lst.append((row.client, row.computer_name, row.build))
-
-    return lst
-
-
-def exclude_builds_specified_user():
-    """Populate a list of computers, skippiing the user specified builds."""
-
-    lst = []
-    for comp in clients_comps_builds:
-        client = comp[0]
-        name = comp[1]
-        build = comp[2]
-        if builds_to_exclude:
-            if build in builds_to_exclude:
-                pass
-            else:
-                lst.append([client, name])
-        else:
-            lst.append([client, name])
-
-    return lst
-
-
-def build_a_set_of_clients():
-    lst = []
-    for client in clients_comps:
-        lst.append(client[0])
-
-    return set(lst)
-
-
-def make_dct():
-    dct = defaultdict(list)
-    for client, comp in clients_comps:
-        dct[client].append(comp)
-    return dct
-
-
-def make_a_list_of_dictionaries():
-    """
-    Convert tuples to dictionaries. Populate a list with the resulting
-    dictionaries.
-    """
-
-    lst = []
-    for client, comp_name in dct_from_tuple.items():
-        for account in clients:
-            dct = {}
-            if account == client:
-                dct[client] = [comp_name]
-                lst.append(dct)
-
-    return lst
-
-
 def build_sched():
     lst = []
+    for dct in computers:
+        for client, details in dct.items():
+            for detail in details:
+                name = detail[0]
+                lst.append((client, name))
 
-    for dct in client_comps_list:
-        for client, comp_details in dct.items():
-            for comp, sat in zip(comp_details[0], cycle(saturdays)):
-                lst.append((str(sat), client, comp))
-
-    return lst
-
-
-def make_ordered_sched():
-    lst = []
-
-    for date_client_comp in sorted(sched):
-        lst.append(date_client_comp)
-
-    return lst
-
-
-def tuples_to_dictionary():
     dct = defaultdict(list)
-
-    for sat, client, comp in ordererd_sched:
-        dct[sat].append([client, comp])
+    for sat, client_comp in zip(cycle(saturdays), lst):
+        dct[sat].append(client_comp)
 
     return dct
 
 
 def output_schedule():
-    print("\nsched dictionary")
-    for sat, client_comp in schedule.items():
-        print(sat)
-        for details in client_comp:
-            client = details[0]
-            comp = details[1]
-            print(client, comp)
-        print("\n")
-
-
-def write_dct_to_csv():
-    """Write dictionary to csv."""
-
-    with open("patching_schedule.csv", "w") as out_file:
-        out_csv = csv.writer(out_file)
-        out_csv.writerow(["date","client","computer"])
-        for sat, client_comps in schedule.items():
-            keys_values = (client_comps)
-            for details in client_comps:
-                client = details[0]
-                comp = details[1]
-                keys_values = (sat, client, comp)
-                out_csv.writerow(keys_values)
-                
-    print('"patching_schedule.csv" exported successfully\n')
+    for sat, comp in schedule.items():
+        print(sat, comp)
+    print("\n")
 
 
 todays_date, target_date = prompt_user_for_target_date()
@@ -187,14 +101,7 @@ sat_start = find_saturday_following_date_specified(todays_date)
 sat_end = find_saturday_following_date_specified(target_date)
 num_saturdays = calc_num_weeks_between_dates(sat_end, sat_start)
 saturdays = make_list_of_saturdays()
-clients_comps_builds = open_csv_pop_dct_namedtuple()
 builds_to_exclude = prompt_user_for_builds_to_exclude()
-clients_comps = exclude_builds_specified_user()
-clients = build_a_set_of_clients()
-dct_from_tuple = make_dct()
-client_comps_list = make_a_list_of_dictionaries()
-sched = build_sched()
-ordererd_sched = make_ordered_sched()
-schedule = tuples_to_dictionary()
+clients, computers = open_csv(builds_to_exclude)
+schedule = build_sched()
 output_schedule()
-write_dct_to_csv()
