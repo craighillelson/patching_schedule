@@ -26,6 +26,30 @@ def prompt_user_for_target_date():
     return today, target
 
 
+def find_saturday_following_date_specified(sat):
+    return sat + relativedelta(weekday=SA(+1))
+
+
+def calc_num_weeks_between_dates(sat2, sat1):
+    return int((sat2 - sat1).days / 7)
+
+
+def create_list_of_saturdays():
+    """
+    Create a list of Saturdays equal to the number of Saturdays between the 
+    Saturday immediately following the start date and the Saturday immediately
+    proceeding the target date for completion.
+    """
+    
+    i = 1
+    lst = []
+    for saturday in range(num_saturdays):
+        saturday = sat_start + relativedelta(weekday=SA(+i))
+        lst.append(saturday)
+        i += 1
+    return lst
+
+
 def prompt_user_for_builds_to_exclude():
     lst = []
     while True:
@@ -37,10 +61,8 @@ def prompt_user_for_builds_to_exclude():
     return lst
 
 
-def open_csv(lst2):
-
-    lst1 = []
-    lst3 = []
+def open_csv():
+    lst = []
 
     with open("computers.csv") as csv_file:
         f_csv = csv.reader(csv_file)
@@ -48,60 +70,85 @@ def open_csv(lst2):
         assembled_tuple = namedtuple('assembled_tuple', headings)
         for detail in f_csv:
             row = assembled_tuple(*detail)
-            lst1.append(row.client)
-            dct = defaultdict(list)
-            if row.build not in lst2:
-                dct[row.client].append((row.computer_name, row.build))
-                lst3.append(dct)
+            if row.build not in builds_to_exclude:
+                lst.append((row.client, row.computer_name))
 
-    return set(lst1), lst3
-
-
-def find_saturday_following_date_specified(sat):
-    return sat + relativedelta(weekday=SA(+1))
-
-
-def calc_num_weeks_between_dates(sat2, sat1):
-    return int((sat2 - sat1).days / 7)
-
-
-def make_list_of_saturdays():
-    i = 1
-    lst = []
-    for saturday in range(num_saturdays):
-        saturday = sat_start + relativedelta(weekday=SA(+i))
-        lst.append(saturday)
-        i += 1
     return lst
 
 
-def build_sched():
-    lst = []
-    for dct in computers:
-        for client, details in dct.items():
-            for detail in details:
-                name = detail[0]
-                lst.append((client, name))
-
+def create_client_comps_dct():
     dct = defaultdict(list)
-    for sat, client_comp in zip(cycle(saturdays), lst):
-        dct[sat].append(client_comp)
+    for client_comps in comps:
+        client = client_comps[0]
+        comp_names = client_comps[1]
+        dct[client].append(comp_names)
 
     return dct
 
 
+def create_list_of_client_comps():
+    """
+    Make a list of dictionaries with structured in the following way:
+    key: client
+    value: list of computers
+    """
+    lst = []
+    for client, comps in client_comps.items():
+        dct = {}
+        dct[client] = comps
+        lst.append(dct)
+    return lst
+
+
+def build_sched():
+    """
+    Loop through computer details and the list of Saturdays and assign 
+    computers to be updated to Saturdays.
+    """
+
+    dct1 = defaultdict(list)
+    for dct2 in client_comps_dicts:
+        for client, details in dct2.items():
+            for client_comps, sat in zip(details, cycle(saturdays)):
+                dct1[str(sat)].append([client, client_comps])
+    return dct1
+
+
 def output_schedule():
-    for sat, comp in schedule.items():
-        print(sat, comp)
-    print("\n")
+    """Output schedule to screen."""
+
+    print("\npatching schedule")
+    for sat, client_comp in schedule.items():
+        for i in client_comp:
+            client = i[0]
+            comp_name = i[1]
+            print(sat, client, comp_name)
+        print("\n")
+
+
+def write_to_csv(file_name):
+    """Write patching schedule to csv."""
+
+    with open(file_name, "w") as out_file:
+        out_csv = csv.writer(out_file)
+        out_csv.writerow(["saturday","client","computer_name"])
+        for sat, client_comp_name in schedule.items():
+            for i in client_comp_name:
+                keys_values = (sat, *i)
+                out_csv.writerow(keys_values)
+
+    print(f'"{file_name}" exported successfully\n')
 
 
 todays_date, target_date = prompt_user_for_target_date()
 sat_start = find_saturday_following_date_specified(todays_date)
 sat_end = find_saturday_following_date_specified(target_date)
 num_saturdays = calc_num_weeks_between_dates(sat_end, sat_start)
-saturdays = make_list_of_saturdays()
+saturdays = create_list_of_saturdays()
 builds_to_exclude = prompt_user_for_builds_to_exclude()
-clients, computers = open_csv(builds_to_exclude)
+comps = open_csv()
+client_comps = create_client_comps_dct()
+client_comps_dicts = create_list_of_client_comps()
 schedule = build_sched()
 output_schedule()
+write_to_csv("patching_schedule.csv")
