@@ -36,7 +36,7 @@ def calc_num_weeks_between_dates(sat2, sat1):
 
 def create_list_of_saturdays():
     """
-    Create a list of Saturdays equal to the number of Saturdays between the 
+    Create a list of Saturdays equal to the number of Saturdays between the
     Saturday immediately following the start date and the Saturday immediately
     proceeding the target date for completion.
     """
@@ -51,6 +51,8 @@ def create_list_of_saturdays():
 
 
 def prompt_user_for_builds_to_exclude():
+    """Populate a list of builds to exclude."""
+    
     lst = []
     while True:
         version = input("\nWhich version or versions would you like to "
@@ -62,6 +64,11 @@ def prompt_user_for_builds_to_exclude():
 
 
 def open_csv():
+    """
+    Open csv and populate a list of tuples that excludes builds specified by the
+    user.
+    """
+
     lst = []
 
     with open("computers.csv") as csv_file:
@@ -77,6 +84,12 @@ def open_csv():
 
 
 def create_client_comps_dct():
+    """
+    Using defaultdict, make a dictionary structured in the following way.
+    key: client
+    values: list of computer names
+    """
+    
     dct = defaultdict(list)
     for client_comps in comps:
         client = client_comps[0]
@@ -88,10 +101,9 @@ def create_client_comps_dct():
 
 def create_list_of_client_comps():
     """
-    Make a list of dictionaries with structured in the following way:
-    key: client
-    value: list of computers
+    Make a list of dictionaries with structured.
     """
+
     lst = []
     for client, comps in client_comps.items():
         dct = {}
@@ -115,7 +127,7 @@ def build_sched():
 
 
 def output_schedule():
-    """Output schedule to screen."""
+    """Output patching schedule to screen."""
 
     print("\npatching schedule")
     for sat, client_comp in schedule.items():
