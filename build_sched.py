@@ -157,7 +157,7 @@ def write_to_csv(file_name):
 def find_average_computers_to_complete_weekly(lst1, lst2):
     avg_machines_per_week = int(len(lst1()) / len(lst2))
     print(f"You need to update an average of {avg_machines_per_week} per week "
-          "to complete updates on time.")
+          "to complete updates on time.\n")
 
 
 todays_date, target_date = prompt_user_for_target_date()
