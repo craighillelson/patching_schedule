@@ -40,7 +40,7 @@ def create_list_of_saturdays():
     Saturday immediately following the start date and the Saturday immediately
     proceeding the target date for completion.
     """
-    
+
     i = 1
     lst = []
     for saturday in range(num_saturdays):
@@ -52,7 +52,7 @@ def create_list_of_saturdays():
 
 def prompt_user_for_builds_to_exclude():
     """Populate a list of builds to exclude."""
-    
+
     lst = []
     while True:
         version = input("\nWhich version or versions would you like to "
@@ -85,11 +85,11 @@ def open_csv():
 
 def create_client_comps_dct():
     """
-    Using defaultdict, make a dictionary structured in the following way.
+    Using defaultdict, make a dictionary structured as follows.
     key: client
     values: list of computer names
     """
-    
+
     dct = defaultdict(list)
     for client_comps in comps:
         client = client_comps[0]
@@ -101,7 +101,9 @@ def create_client_comps_dct():
 
 def create_list_of_client_comps():
     """
-    Make a list of dictionaries with structured.
+    Make a list of dictionaries, with each dictionary structured as follows.
+    key: client
+    values: list of computers to update
     """
 
     lst = []
@@ -114,7 +116,7 @@ def create_list_of_client_comps():
 
 def build_sched():
     """
-    Loop through computer details and the list of Saturdays and assign 
+    Loop through computer details and the list of Saturdays and assign
     computers to be updated to Saturdays.
     """
 
@@ -152,6 +154,12 @@ def write_to_csv(file_name):
     print(f'"{file_name}" exported successfully\n')
 
 
+def find_average_computers_to_complete_weekly(lst1, lst2):
+    avg_machines_per_week = int(len(lst1()) / len(lst2))
+    print(f"You need to update an average of {avg_machines_per_week} per week "
+          "to complete updates on time.")
+
+
 todays_date, target_date = prompt_user_for_target_date()
 sat_start = find_saturday_following_date_specified(todays_date)
 sat_end = find_saturday_following_date_specified(target_date)
@@ -164,3 +172,4 @@ client_comps_dicts = create_list_of_client_comps()
 schedule = build_sched()
 output_schedule()
 write_to_csv("patching_schedule.csv")
+find_average_computers_to_complete_weekly(open_csv, saturdays)
